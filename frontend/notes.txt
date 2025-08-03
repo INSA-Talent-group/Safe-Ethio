@@ -1,0 +1,65 @@
+/src
+│
+├── /assets                # Images, fonts, icons, etc.
+│
+├── /components            # Shared UI building blocks
+│   ├── /atoms             # Smallest, reusable pieces (Button, Text, Input)
+│   ├── /molecules         # Group of atoms (FormField, Card with Button)
+│   ├── /organisms         # Full sections of UI (LoginForm, Header, Footer)
+│
+├── /navigation            # Navigation config (tab, stack)
+│
+├── /screens               # Pages or views (LoginScreen, HomeScreen)
+│
+├── /hooks                 # Custom hooks (useAuth, useFetch)
+│
+├── /services              # API calls, Firebase, etc.
+│
+├── /contexts              # React context (AuthContext, ThemeContext)
+│
+├── /utils                 # Helpers, constants, validators
+│
+├── /types                 # TypeScript types and interfaces
+│
+└── App.tsx                # App entry point
+
+
+// Button.tsx
+import { Text, TouchableOpacity } from "react-native";
+export default function Button({ title, onPress }) {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <Text>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+✅ molecules/
+tsx
+Copy
+Edit
+// FormField.tsx
+import { View, Text, TextInput } from "react-native";
+export default function FormField({ label, ...props }) {
+  return (
+    <View>
+      <Text>{label}</Text>
+      <TextInput {...props} />
+    </View>
+  );
+}
+✅ organisms/
+tsx
+Copy
+Edit
+// LoginForm.tsx
+import Button from "../atoms/Button";
+import FormField from "../molecules/FormField";
+export default function LoginForm({ onSubmit }) {
+  return (
+    <>
+      <FormField label="Email" />
+      <FormField label="Password" secureTextEntry />
+      <Button title="Login" onPress={onSubmit} />
+    </>
+  );
+}
