@@ -1,4 +1,6 @@
 //app/login.tsx
+import Utils from "@/utils/utils";
+import axios from "axios";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
@@ -19,11 +21,38 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     //validation logic
+    // if (!logInData.email || !logInData.password) {
+    //   Alert.alert("Error", "Please fill in all fields.");
+    //   return;
+    // }
+    // //check email format
+    // if (!Utils.isValidEmail(logInData.email)) {
+    //   Alert.alert("Error", "Please enter a valid email address.");
+    //   return;
+    // }
+    //Api call logic
+    // console.log("Login Data:", logInData);
+    // axios.post("http://locoalhost:3000/api/login", logInData)
+    //         .then((response) => {
+    //           console.log("Login successful:", response.data);
+    //         })
+    //         .catch((error) => {
+    //           console.error("Login error:", error);
+    //           Alert.alert("Login Failed", "Please check your credentials.");
+    //         })
+    //         .finally(() => {
+    //           // Optionally, you can reset the form or perform other actions
+    //           setLogInData({ email: "", password: "" });
+    //         })
 
     Alert.alert(
       "Login Successful",
       `Email: ${logInData.email}, Password: ${logInData.password}`
     );
+    //request permissions
+    Utils.requestLocationPermissions();
+    Utils.requestCameraPermissions();
+    Utils.requestMediaLibraryPermissions();
 
     //redirect
     router.replace("/home");

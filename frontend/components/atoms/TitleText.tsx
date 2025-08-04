@@ -7,7 +7,7 @@ export default function TitleText({
   children: React.ReactNode;
   style?: object;
 }) {
-  return <Text style={[style, styles.titleText]}>{children}</Text>;
+  return <Text style={[styles.titleText, style]}>{children}</Text>;
 }
 
 const styles = StyleSheet.create({

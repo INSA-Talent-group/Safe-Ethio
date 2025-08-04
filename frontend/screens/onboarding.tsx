@@ -1,4 +1,5 @@
 import OnBoardingSwiper from "@/components/organisms/OnboardingSwiper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React from "react";
 
@@ -25,10 +26,13 @@ const slides = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  // console.log("onboarding screen rendered");
 
-  const handleGetStarted = () => {
-    router.replace("/login"); // navigate to login page
+  const finishedOnboarding = async () => {
+    // Logic to handle when the user finishes onboarding
+    await AsyncStorage.setItem("hasOnboarded", "true");
+    router.replace("/(auth)/login"); // Redirect to login page after onboarding
   };
 
-  return <OnBoardingSwiper slides={slides} onGetStarted={handleGetStarted} />;
+  return <OnBoardingSwiper slides={slides} onGetStarted={finishedOnboarding} />;
 }
