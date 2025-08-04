@@ -15,6 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 class AlertSerializer(serializers.ModelSerializer):
     class Meta:
+        
         model = alert
         fields = ['id', 'user_id', 'photo1', 'description', 'created_at', 'updated_at']
     
