@@ -6,7 +6,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
 from twilio.rest import Client
 from .models import register, Alert
-from .serializers import RegisterSerializer, AlertSerializer
+from .serializers import RegisterSerializer, AlertSerializer, TrustedContactSerializer, ReportSerializer, LocationTrackerSerializer, ChatChannelSerializer, MessageSerializer
+from .models import Trustedcontact, Report, LocationTracking, Message, ChatChannel
 
 # Twilio Config (put real values in settings.py or .env)
 TWILIO_SID = 'your_sid'
@@ -46,7 +47,7 @@ class LoginAPIView(APIView):
             "status": status.HTTP_401_UNAUTHORIZED,
             "error": "Authentication failed"
         }, status=status.HTTP_401_UNAUTHORIZED)
-        
+    
 class LogoutAPIView(APIView):
     def post(self, request):
         logout(request)
@@ -86,3 +87,54 @@ class AlertViewSet(viewsets.ModelViewSet):
             from_=TWILIO_NUMBER,
             to=to_number
         )
+class TrustedContactViewSet(viewsets.ModelViewSet):
+    queryset = Trustedcontact.objects.all()
+    serializer_class = TrustedContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Trustedcontact.objects.filter(user_id=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user) # Assuming the serializer has a 'user' field
+class LocationTrackingViewSet(viewsets.ModelViewSet):
+    queryset = LocationTracking.objects.all()
+    serializer_class = LocationTrackerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return LocationTracking.objects.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user)  # Assuming the serializer has a 'user_id' field
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Chat.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Chat.objects.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user)  # Assuming the serializer has a 'user_id' field
+
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Report.objects.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user)  # Assuming the serializer has a 'user_id' field
+
+class ChatChannelViewSet(viewsets.ModelViewSet):
+    queryset = ChatChannel.objects.all()
+    serializer_class = ChatChannelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ChatChannel.objects.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user)  # Assuming the serializer has a 'user_id' field
