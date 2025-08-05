@@ -12,6 +12,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'safe.register'
 
 # Application definition
 
@@ -98,6 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -109,6 +111,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8081",  
+    "http://10.127.176.197:19006",  
+    "exp://10.127.176.197:8081",
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -119,3 +128,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+TWILIO_ACCOUNT_SID = 'ACfb8c6b6...5bddbb4c9044845e8a7e7'
+TWILIO_AUTH_TOKEN = '9bb8a65ac1...c664f763cb4c5a24ba'
+TWILIO_PHONE_NUMBER = '+154...48701'
+ADMIN_PHONE_NUMBER = '+251914243851'
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ethiomiracle2017@gmil.com'  # Use environment variable for security
+
+# Channels settings
+ASGI_APPLICATION = 'safeethio.asgi.application'

@@ -15,6 +15,7 @@ import Button from "@/components/atoms/Button";
 import ImagePickerModal from "@/components/molecules/ImagePickerModal";
 import Utils from "@/utils/utils";
 import axios from "axios";
+import { ActivityIndicator } from "react-native-paper";
 // import ImagePickerModal from "@/components/organisms/dropDown";
 
 export default function RegisterScreen() {
@@ -28,8 +29,10 @@ export default function RegisterScreen() {
     phoneNumber: "",
   });
   const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = () => {
+    setLoading(true);
     //validation logic
     for (const key in logInData) {
       if (!logInData[key as keyof typeof logInData]) {
@@ -67,37 +70,47 @@ export default function RegisterScreen() {
     } as any);
     formData.append("email", logInData.email);
     formData.append("password", logInData.password);
-    formData.append("fullName", logInData.fullName);
-    formData.append("phoneNumber", logInData.phoneNumber);
-    // api call to register user would go here
-    // axios
-    //   .post("https://example.com/api/register", formData, {
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   })
-    //   .then((response) => {
-    //     console.log("Registration successful:", response.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Registration error:", error);
-    //     Alert.alert(
-    //       "Registration Error",
-    //       "An error occurred during registration."
-    //     );
-    //   })
-    //   .finally(() => {
-    //     //finally
-    //   });
+    formData.append("fullname", logInData.fullName);
+    formData.append("username", logInData.fullName);
 
-    Alert.alert(
+    formData.append("phone_number", logInData.phoneNumber);
+    // api call to register user would go here
+    axios
+      .post("http://localhost:8000/register/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        console.log("Registration successful:", response.data);
+            Alert.alert(
       "Registration Successful",
       `Email: ${logInData.email}, Password: ${logInData.password}`
     );
-
-    //redirect
+        //redirect
     router.replace("/login");
+      })
+      .catch((error) => {
+        console.error("Registration error:", error);
+        Alert.alert(
+          "Registration Error",
+          "An error occurred during registration."
+        );
+      })
+      .finally(() => {
+        setLoading(false);
+        //finally
+      });
+
+
+
+
   };
+  if(loading) {
+    return (
+      <ActivityIndicator size="large" color="#6200ee" style={{ flex: 1, justifyContent: 'center' }} />
+    )
+  }
 
   return (
     <KeyboardAvoidingView style={styles.container}>

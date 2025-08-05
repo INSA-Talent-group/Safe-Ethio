@@ -13,7 +13,7 @@ import BodyText from "../atoms/BodyText";
 import HiddenCamera from "./HiddenCamera";
 import { useEffect, useState } from "react";
 import Utils from "@/utils/utils";
-import { Checkbox } from "react-native-paper";
+import { ActivityIndicator, Checkbox } from "react-native-paper";
 import axios from "axios";
 
 type LocationType = {
@@ -41,6 +41,7 @@ export default function SosModal({
 
   const [currentLocation, setCurrentLocation] = useState<LocationType>();
   const [isSelected, setSelection] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function fetchLocation() {
@@ -53,6 +54,7 @@ export default function SosModal({
   }, []);
 
   const sendSos = () => {
+    setIsLoading(true);
     //take one picture
     //send the picture and location to the server
     //send to server
@@ -61,15 +63,25 @@ export default function SosModal({
       pictures: pictures,
     };
 
-    // axios
-    //   .post("#url", sosData)
-    //   .then((response) => {
-    //     Alert.alert("SOS Sent", "Your SOS signal has been sent successfully.");
-    //   })
-    //   .catch((error) => {
-    //     Alert.alert("SOS Error", "There was an error sending your SOS signal.");
-    //   });
+    axios
+      .post("http://localhost:8000/alert/", sosData)
+      .then((response) => {
+        Alert.alert("SOS Sent", "Your SOS signal has been sent successfully.");
+      })
+      .catch((error) => {
+        Alert.alert("SOS Error", "There was an error sending your SOS signal.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+        onClose();
+      });
   };
+
+  if(isLoading) {
+    return (
+      <ActivityIndicator size="large" color="#d81f50ff" style={{ flex: 1,justifyContent:"center",alignItems:"center" }} />
+    )
+  }
 
   return (
     <>

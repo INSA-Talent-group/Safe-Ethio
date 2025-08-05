@@ -1,73 +1,88 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from rest_framework import viewsets
-from .models import register, alert
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import authenticate, login, logout
+from django.core.mail import send_mail
+from twilio.rest import Client
+from .models import register, Alert
 from .serializers import RegisterSerializer, AlertSerializer
-from .views.decorators import login, logout
-from django.http import JsonResponse
-from django.contrib.auth import authenticate
-from django.views.decorators.csrf import csrf_exempt
-import json
 
-@csrf_exempt
-def RegisterViewSet(request):
-    """Step 1: Verify username and password are registered"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        
-        if not username or not password:
-            return JsonResponse({'error': 'Username and password required.'}, status=400)
-        
-        # Check if user exists and credentials are correct
-        user = authenticate(username=username, password=password)
-        if user is None:
-            return JsonResponse({
-                'verified': False, 
-                'error': 'Invalid username or password.',
-                'step': 'credentials_failed'
-            }, status=401)
-        # Check if user is blocked
-        try:
-            profile = register.objects.get(user=user)
-            if profile.blocked:
-                return JsonResponse({'verified': False, 'error': 'User is blocked by supervisor.', 'step': 'blocked'}, status=403)
-            
-            has_face = profile.face_encoding is not None
-            has_iris = profile.iris_encoding is not None
-            has_fingerprint = profile.fingerprint_encoding is not None
-            
-            return JsonResponse({
-                'verified': True,
-                'username': username,
-                'step': 'credentials_verified',
-                'message': 'Credentials verified. Please provide biometric data.',
-                'available_biometrics': {
-                    'face': has_face,
-                    'iris': has_iris,
-                    'fingerprint': has_fingerprint
-                }
+# Twilio Config (put real values in settings.py or .env)
+TWILIO_SID = 'your_sid'
+TWILIO_TOKEN = 'your_token'
+TWILIO_NUMBER = '+1234567890'
+
+class RegisterViewSet(viewsets.ModelViewSet):
+    queryset = register.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(request, email=email, password=password)
+        if user:
+            login(request, user)
+            return Response({
+                "message": "Login successful",
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "fullname": user.fullname,
+                    "phone_number": user.phone_number,
+                    "address": user.address,
+                    "is_admin": user.is_admin,
+                },
+                "success": True,
+                "status": status.HTTP_200_OK,
+                "error": None
             })
-        except register.DoesNotExist:
-            return JsonResponse({
-                'verified': False,
-                'error': 'User profile not found. Please register biometric data.',
-                'step': 'no_profile'
-            }, status=404)
-    
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+        return Response({
+            "message": "Invalid credentials",
+            "success": False,
+            "status": status.HTTP_401_UNAUTHORIZED,
+            "error": "Authentication failed"
+        }, status=status.HTTP_401_UNAUTHORIZED)
+        
+class LogoutAPIView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"message": "Logged out successfully"})
+
 
 class AlertViewSet(viewsets.ModelViewSet):
-    queryset = alert.objects.all()
+    queryset = Alert.objects.all()
     serializer_class = AlertSerializer
-class loginViewSet(viewsets.ViewSet):
-    def login(self, request):
-        return HttpResponse("Login successful")
-    def logout(self, request):
-        return HttpResponse("Logout successful")
-    
-    
-    
-    
-    
+    permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        self.send_alert(instance)
+
+    def send_alert(self, instance):
+        users = register.objects.filter(is_user=True)
+        for user in users:
+            if user.email:
+                self.send_email(user.email, instance.description)
+            if user.phone_number:
+                self.send_sms(user.phone_number, instance.description)
+
+    def send_email(self, to_email, message):
+        send_mail(
+            subject="New Alert Notification",
+            message=message,
+            from_email="ethiomiracle2017@gmail.com",
+            recipient_list=[to_email],
+            fail_silently=False,
+
+        )
+
+    def send_sms(self, to_number, message):
+        client = Client(TWILIO_SID, TWILIO_TOKEN)
+        client.messages.create(
+            body=message,
+            from_=TWILIO_NUMBER,
+            to=to_number
+        )
